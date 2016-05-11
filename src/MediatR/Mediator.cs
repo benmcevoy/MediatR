@@ -1,6 +1,4 @@
-﻿using MediatR.Internal;
-
-namespace MediatR
+﻿namespace MediatR
 {
     using System;
     using System.Collections.Generic;
