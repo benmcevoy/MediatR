@@ -14,8 +14,6 @@ namespace MediatR
     /// </summary>
     public class Mediator : IMediator
     {
-        private readonly SingleInstanceFactory _singleInstanceFactory;
-
         private readonly MultiInstanceFactory _multiInstanceFactory;
 
         private readonly ConcurrentDictionary<Type, Type> _genericHandlerCache;
@@ -24,53 +22,14 @@ namespace MediatR
         /// <summary>
         /// Initializes a new instance of the <see cref="Mediator"/> class.
         /// </summary>
-        /// <param name="singleInstanceFactory">The single instance factory.</param>
         /// <param name="multiInstanceFactory">The multi instance factory.</param>
-        public Mediator(SingleInstanceFactory singleInstanceFactory, MultiInstanceFactory multiInstanceFactory)
+        public Mediator(MultiInstanceFactory multiInstanceFactory)
         {
-            _singleInstanceFactory = singleInstanceFactory;
             _multiInstanceFactory = multiInstanceFactory;
             _genericHandlerCache = new ConcurrentDictionary<Type, Type>();
             _wrapperHandlerCache = new ConcurrentDictionary<Type, Type>();
         }
-
-        public TResponse Send<TResponse>(IRequest<TResponse> request)
-        {
-            var defaultHandler = GetHandler(request);
-
-            var result = defaultHandler.Handle(request);
-
-            return result;
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(IAsyncRequest<TResponse> request)
-        {
-            var defaultHandler = GetHandler(request);
-
-            var result = defaultHandler.Handle(request);
-
-            return result;
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(ICancellableAsyncRequest<TResponse> request, CancellationToken cancellationToken)
-        {
-            var defaultHandler = GetHandler(request);
-
-            var result = defaultHandler.Handle(request, cancellationToken);
-
-            return result;
-        }
-
-        public void Publish(INotification notification)
-        {
-            var notificationHandlers = GetNotificationHandlers(notification);
-
-            foreach (var handler in notificationHandlers)
-            {
-                handler.Handle(notification);
-            }
-        }
-
+        
         public Task PublishAsync(IAsyncNotification notification)
         {
             var notificationHandlers = GetNotificationHandlers(notification)
@@ -87,58 +46,6 @@ namespace MediatR
                 .ToArray();
 
             return Task.WhenAll(notificationHandlers);
-        }
-
-        private RequestHandlerWrapper<TResponse> GetHandler<TResponse>(IRequest<TResponse> request)
-        {
-            return GetHandler<RequestHandlerWrapper<TResponse>, TResponse>(request,
-                typeof(IRequestHandler<,>),
-                typeof(RequestHandlerWrapper<,>));
-        }
-
-        private AsyncRequestHandlerWrapper<TResponse> GetHandler<TResponse>(IAsyncRequest<TResponse> request)
-        {
-            return GetHandler<AsyncRequestHandlerWrapper<TResponse>, TResponse>(request,
-                typeof(IAsyncRequestHandler<,>),
-                typeof(AsyncRequestHandlerWrapper<,>));
-        }
-
-        private CancellableAsyncRequestHandlerWrapper<TResponse> GetHandler<TResponse>(ICancellableAsyncRequest<TResponse> request)
-        {
-            return GetHandler<CancellableAsyncRequestHandlerWrapper<TResponse>, TResponse>(request,
-                typeof(ICancellableAsyncRequestHandler<,>),
-                typeof(CancellableAsyncRequestHandlerWrapper<,>));
-        }
-
-        private TWrapper GetHandler<TWrapper, TResponse>(object request, Type handlerType, Type wrapperType)
-        {
-            var requestType = request.GetType();
-
-            var genericHandlerType = _genericHandlerCache.GetOrAdd(requestType, handlerType, (type, root) => root.MakeGenericType(type, typeof(TResponse)));
-            var genericWrapperType = _wrapperHandlerCache.GetOrAdd(requestType, wrapperType, (type, root) => root.MakeGenericType(type, typeof(TResponse)));
-
-            var handler = GetHandler(request, genericHandlerType);
-
-            return (TWrapper) Activator.CreateInstance(genericWrapperType, handler);
-        }
-
-        private object GetHandler(object request, Type handlerType)
-        {
-            try
-            {
-                return _singleInstanceFactory(handlerType);
-            }
-            catch (Exception e)
-            {
-                throw BuildException(request, e);
-            }
-        }
-
-        private IEnumerable<NotificationHandlerWrapper> GetNotificationHandlers(INotification notification)
-        {
-            return GetNotificationHandlers<NotificationHandlerWrapper>(notification,
-                typeof(INotificationHandler<>),
-                typeof(NotificationHandlerWrapper<>));
         }
 
         private IEnumerable<AsyncNotificationHandlerWrapper> GetNotificationHandlers(IAsyncNotification notification)

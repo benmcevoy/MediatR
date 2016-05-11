@@ -24,13 +24,9 @@ namespace MediatR.Examples.Autofac
             var builder = new ContainerBuilder();
             builder.RegisterSource(new ContravariantRegistrationSource());
             builder.RegisterAssemblyTypes(typeof (IMediator).GetTypeInfo().Assembly).AsImplementedInterfaces();
-            builder.RegisterAssemblyTypes(typeof (Ping).GetTypeInfo().Assembly).AsImplementedInterfaces();
+            builder.RegisterAssemblyTypes(typeof (PingedAsync).GetTypeInfo().Assembly).AsImplementedInterfaces();
             builder.RegisterInstance(Console.Out).As<TextWriter>();
-            builder.Register<SingleInstanceFactory>(ctx =>
-            {
-                var c = ctx.Resolve<IComponentContext>();
-                return t => c.Resolve(t);
-            });
+            
             builder.Register<MultiInstanceFactory>(ctx =>
             {
                 var c = ctx.Resolve<IComponentContext>();

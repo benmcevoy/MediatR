@@ -21,15 +21,11 @@
             {
                 cfg.Scan(scanner =>
                 {
-                    scanner.AssemblyContainingType<Ping>();
+                    scanner.AssemblyContainingType<PingedAsync>();
                     scanner.AssemblyContainingType<IMediator>();
                     scanner.WithDefaultConventions();
-                    scanner.ConnectImplementationsToTypesClosing(typeof(IRequestHandler<,>));
-                    scanner.ConnectImplementationsToTypesClosing(typeof(IAsyncRequestHandler<,>));
-                    scanner.ConnectImplementationsToTypesClosing(typeof(INotificationHandler<>));
                     scanner.ConnectImplementationsToTypesClosing(typeof(IAsyncNotificationHandler<>));
                 });
-                cfg.For<SingleInstanceFactory>().Use<SingleInstanceFactory>(ctx => t => ctx.GetInstance(t));
                 cfg.For<MultiInstanceFactory>().Use<MultiInstanceFactory>(ctx => t => ctx.GetAllInstances(t));
                 cfg.For<TextWriter>().Use(Console.Out);
             });

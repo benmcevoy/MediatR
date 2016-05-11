@@ -18,7 +18,6 @@ namespace MediatR.Examples.AspNetCore
         {
             var services = new ServiceCollection();
 
-            services.AddScoped<SingleInstanceFactory>(p => t => p.GetRequiredService(t));
             services.AddScoped<MultiInstanceFactory>(p => t => p.GetRequiredServices(t));
 
             services.AddInstance(Console.Out);
@@ -26,7 +25,7 @@ namespace MediatR.Examples.AspNetCore
             // Use Scrutor to scan and register all
             // classes as their implemented interfaces.
             services.Scan(scan => scan
-                .FromAssembliesOf(typeof(IMediator), typeof(Ping))
+                .FromAssembliesOf(typeof(IMediator), typeof(PingedAsync))
                 .AddClasses()
                 .AsImplementedInterfaces());
 

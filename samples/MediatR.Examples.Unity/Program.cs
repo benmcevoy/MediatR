@@ -19,11 +19,9 @@
         {
             var container = new UnityContainer();
             container.RegisterType<IMediator, Mediator>();
-            container.RegisterTypes(AllClasses.FromAssemblies(typeof(Ping).Assembly), WithMappings.FromAllInterfaces, GetName, GetLifetimeManager);
-            container.RegisterType(typeof(INotificationHandler<>), typeof(GenericHandler), GetName(typeof(GenericHandler)));
+            container.RegisterTypes(AllClasses.FromAssemblies(typeof(PingedAsync).Assembly), WithMappings.FromAllInterfaces, GetName, GetLifetimeManager);
             container.RegisterType(typeof(IAsyncNotificationHandler<>), typeof(GenericAsyncHandler), GetName(typeof(GenericAsyncHandler)));
             container.RegisterInstance(Console.Out);
-            container.RegisterInstance<SingleInstanceFactory>(t => container.Resolve(t));
             container.RegisterInstance<MultiInstanceFactory>(t => container.ResolveAll(t));
 
             var mediator = container.Resolve<IMediator>();
@@ -33,7 +31,7 @@
 
         static bool IsNotificationHandler(Type type)
         {
-            return type.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(INotificationHandler<>) || x.GetGenericTypeDefinition() == typeof(IAsyncNotificationHandler<>)));
+            return type.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(IAsyncNotificationHandler<>)));
         }
 
         static LifetimeManager GetLifetimeManager(Type type)

@@ -18,7 +18,7 @@ namespace MediatR.Examples.NoContainer
         private static IMediator BuildMediator()
         {
             var libraryManager = PlatformServices.Default.LibraryManager;
-            var mediator = new Mediator(t => SingleInstanceFactory(t, libraryManager), t => MultiInstanceFactory(t, libraryManager));
+            var mediator = new Mediator(t => MultiInstanceFactory(t, libraryManager));
             return mediator;
         }
 
@@ -28,15 +28,6 @@ namespace MediatR.Examples.NoContainer
                 .SelectMany(s => s.ExportedTypes)
                 .Where(t => serviceType.GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
                 .Select(type => Activator.CreateInstance(type, Console.Out));
-        }
-
-        private static object SingleInstanceFactory(Type serviceType, ILibraryManager libraryManager)
-        {
-            var type = libraryManager.GetAssemblies()
-                .SelectMany(s => s.ExportedTypes)
-                .First(t => serviceType.GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()));
-
-            return Activator.CreateInstance(type);
         }
 
         private static IEnumerable<Assembly> GetAssemblies(this ILibraryManager libraryManager)

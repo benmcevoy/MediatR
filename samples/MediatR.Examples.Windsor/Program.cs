@@ -21,10 +21,9 @@
         {
             var container = new WindsorContainer();
             container.Register(Component.For<IMediator>().ImplementedBy<Mediator>());
-            container.Register(Classes.FromAssemblyContaining<Ping>().Pick().WithServiceAllInterfaces());
+            container.Register(Classes.FromAssemblyContaining<PingedAsync>().Pick().WithServiceAllInterfaces());
             container.Register(Component.For<TextWriter>().Instance(Console.Out));
             container.Kernel.AddHandlersFilter(new ContravariantFilter());
-            container.Register(Component.For<SingleInstanceFactory>().UsingFactoryMethod<SingleInstanceFactory>(k => t => k.Resolve(t)));
             container.Register(Component.For<MultiInstanceFactory>().UsingFactoryMethod<MultiInstanceFactory>(k => t => (IEnumerable<object>)k.ResolveAll(t)));
 
             var mediator = container.Resolve<IMediator>();
